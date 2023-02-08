@@ -96,9 +96,11 @@ const Dashboard = () => {
     }
 
     const submitDetails = () => {
-        console.log(input)
-    }
 
+        console.log(input)
+        //console.log(e.target.value)
+    }
+    const [error, setError] = useState({});
     useEffect(() => {
         setInput({
             ...input,
@@ -110,6 +112,18 @@ const Dashboard = () => {
             hobbies: selectedHobbies.hobbies,
             date: date
         });
+        schema
+            .validate(input, { abortEarly: false })
+            .then(() => {
+                setError({});
+            })
+            .catch((err) => {
+                setError(err.inner.reduce((acc, curr) => {
+                    acc[curr.path] = curr.message;
+                    return acc;
+                }, {}));
+            });
+
     }, [fullname, email, phoneno, gender, city, selectedHobbies.hobbies, date])
 
     return (
@@ -134,73 +148,76 @@ const Dashboard = () => {
                         hobbies: ''
                     }}
                     validationSchema={schema}
-                ><div class="container">
-                        <form class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(submitDetails)}>
-                            <div class="row">
-                                <div class="md:w-1/3">
+                ><div>
+                        <form onSubmit={handleSubmit(submitDetails)}>
+                            <div>
+                                <div>
                                     <label for="fname">First Name</label>
                                 </div>
-                                <div class="md:w-2/3">
-                                    <input name="thename" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" placeholder='Name' {...register("fullname")
+                                <div>
+                                    <input name="thename" id="name" placeholder='Name' {...register("fullname")
                                     } onChange={(e) => { setFullname(e.target.value) }} value={fullname} />
-                                    <p>{errors.fullname?.message}</p>
+                                    {error.fullname && <p>{error.fullname}</p>}
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-25">
-                                    <label for="email">email</label>
+                            <div>
+                                <div>
+                                    <label htmlFor="email">email</label>
                                 </div>
 
-                                <div class="col-75">
+                                <div>
                                     <input name="email" id="email" placeholder='Email' className="text-indigo-400 "
 
                                         {...register("email")
                                         } onChange={(e) => { setEmail(e.target.value) }} value={email} />
-                                    <p>{errors.email?.message}</p>
+                                    {error.email && <p>{error.email}</p>}
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-25">
-                                    <label for="phonno">phoneno</label>
+                            <div>
+                                <div>
+                                    <label htmlFor="phonno">phoneno</label>
                                 </div>
-                                <div class="col-75">
+                                <div>
                                     <input {...register("phoneno")}
                                         name="phoneno"
                                         placeholder='Phone No.'
                                         value={phoneno}
                                         onChange={(e) => { setPhoneno(e.target.value) }} />
-                                    <p>{errors.phoneno?.message}</p>
+                                    {error.phoneno && <p>{error.phoneno}</p>}
                                 </div>
                             </div>
                             <div>
                                 <div>
-                                    <label htmlFor="MALE">
-                                        <input
-                                            {...register('gender', { required: true })}
-                                            type="radio"
-                                            name="gender"
-                                            value="MALE"
-                                            onChange={(e) => { setGender(e.target.value) }}
-                                            id="ted-lasso"
-                                        />
-                                        MALE
-                                    </label>
-                                </div>
+                                    <div>
+                                        <label htmlFor="MALE">
+                                            <input
+                                                {...register('gender', { required: true })}
+                                                type="radio"
+                                                name="gender"
+                                                value="MALE"
+                                                onChange={(e) => { setGender(e.target.value) }}
+                                                id="ted-lasso"
+                                            />
+                                            MALE
+                                        </label>
+                                    </div>
 
-                                <div>
-                                    <label htmlFor="FEMALE">
-                                        <input
-                                            {...register('gender', { required: true })}
-                                            type="radio"
-                                            name="gender"
-                                            value="FEMALE"
-                                            onChange={(e) => { setGender(e.target.value) }}
-                                            id="got"
-                                        />
-                                        FEMALE
-                                    </label>
+
+                                    <div>
+                                        <label htmlFor="FEMALE">
+                                            <input
+                                                {...register('gender', { required: true })}
+                                                type="radio"
+                                                name="gender"
+                                                value="FEMALE"
+                                                onChange={(e) => { setGender(e.target.value) }}
+                                                id="got"
+                                            />
+                                            FEMALE
+                                        </label>
+                                    </div>
                                 </div>
-                                <p>{errors.gender?.message}</p>
+                                {error.gender && <p>{error.gender}</p>}
                             </div>
                             <div>
                                 <p>
@@ -217,7 +234,7 @@ const Dashboard = () => {
                                         })
                                     }
                                 </select>
-                                <p>{errors.city?.message}</p>
+                                {error.city && <p>{error.city}</p>}
                             </div>
                             <div>
                                 <p>Select your Hobbies</p>
@@ -235,10 +252,14 @@ const Dashboard = () => {
                                                 />
                                                 <label>{hobbie.label}</label>
                                             </div>
+
                                         </div>
+
                                     );
-                                })}
-                                <p>{errors.hobbie?.message}</p>
+                                }
+
+                                )}
+
                             </div>
                             <div>
                                 <DatePicker
@@ -246,7 +267,7 @@ const Dashboard = () => {
                                     onChange={handleDate}
                                 />
                             </div>
-                            <Button class="submit" ype="submit">submit</Button>
+                            <Button type="submit">submit</Button>
                         </form>
                     </div>
                 </Formik>
