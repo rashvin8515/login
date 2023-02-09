@@ -4,68 +4,69 @@ import useAuth from '../contexts/AuthContext';
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useForm } from "react-hook-form";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 const Login = () => {
     const navigate = useNavigate();
-    const [username, setusername] = useState("");
-    const [password, setpassword] = useState("");
+    //const [username, setusername] = useState("");
+    //const [password, setpassword] = useState("");
     const { login } = useAuth();
-    const schema = yup.object().shape({
-        username: yup.string().required(),
+    const validationSchema = yup.object({
+        name: yup.string().required("NAME IS REQUIRED"),
         password: yup.string().min(4).max(32).required(),
     });
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-    } = useForm({
-        resolver: yupResolver(schema),
-    });
-    useEffect(() => {
-        localStorage.setItem("Username", JSON.stringify(username));
-        localStorage.setItem("isLoggedIn", true);
-    }, [username]);
-    const onSubmit = (e) => {
-        if (username === " " && password === " ") {
-            alert("Invalid Entry");
-            return;
-        }
-        else {
-            localStorage.setItem("username", JSON.stringify(username));
-            localStorage.setItem("password", JSON.stringify(password));
-            login().then(() => {
-                navigate("/dashboard");
-            });
-        }
-    };
+    // const {
+    //     register,
+    //     handleSubmit,
+    //     formState: { errors },
+    //     reset,
+    // } = useForm({
+    //     resolver: yupResolver(schema),
+    // });
+    // useEffect(() => {
+    //     localStorage.setItem("Username", JSON.stringify(username));
+    //     localStorage.setItem("isLoggedIn", true);
+    // }, [username]);
+    // const onSubmit = (e) => {
+    //     localStorage.setItem("username", JSON.stringify(username));
+    //   
+    //     login().then(() => {
+    //         navigate("/dashboard");
+    //     });
+    // };
     return (
         <div>
-            <p>Sign In</p>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <input
-                    {...register("username")}
-                    placeholder="john doe"
-                    type="text"
-                    required
-                    value={username}
-                    onChange={(e) => setusername(e.target.value)}
-                />
-                <p>{errors.username?.message}</p>
-                <br />
-                <br />
-                <input
-                    {...register("password")}
-                    placeholder="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setpassword(e.target.value)}
-                    required
-                />
-                <p>{errors.password?.message}</p>
-                <br />
-                <br />
-                <input type="submit" value="Submit" />
-            </form>
+            <Formik
+                validationSchema={validationSchema}
+                initialValues={{
+                    name: "",
+                    password: "",
+                }}
+                onSubmit={(values) => {
+                    console.log(values);
+                    localStorage.setItem("username", values.name);
+                    localStorage.setItem("password", values.password);
+                    localStorage.setItem("isLoggedIn",true)
+                    login().then(() => {
+                        navigate("/dashboard");
+                    });
+                }}
+            >
+                {({ values }) => (
+                    <Form>
+                        <label>Name:</label>
+                        <Field name="name" type="text" />
+                        <ErrorMessage name="name" />
+                        <br /> <br />
+
+                        <label>Password:</label>
+                        <Field name="password" type="password" />
+                        <ErrorMessage name="password" />
+                        <br /> <br />
+
+                        <button type="submit" value="submit">Submit</button>
+                    </Form>
+                )}
+            </Formik>
         </div>
     )
 };

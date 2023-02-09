@@ -15,6 +15,7 @@ function useAuth() {
     },
     logout() {
       return new Promise((res) => {
+        localStorage.clear()
         setAuthed(false);
         res();
       });
