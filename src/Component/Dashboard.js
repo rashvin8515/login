@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom"
 import * as yup from "yup";
+import { useDispatch, useSelector } from "react-redux";
 import useAuth from '../contexts/AuthContext'
 import "../App.css";
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -9,13 +10,22 @@ import api from '../api/interceptor';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import {
+    addUserDataApi,
+    getUserDataApi,
+    updateUserDataApi,
+    deleteUserDataApi,
+  } from "../Redux/userDataSlice";
 
 const Dashboard = () => {
-
+    const dispatch = useDispatch();
+    const userdata = useSelector((state) => state.userData);
+    const formData = userdata.userData;
     useEffect(() => {
         getData()
     }, [])
-    const [formData, setFormData] = useState([]);
+    //const [formData, setFormData] = useState([]);
+    const [editingId, setEditingId] = React.useState(0);
     var [initialValues1, setInitialValue1] = useState({
         age: "",
         email: "",
@@ -59,98 +69,96 @@ const Dashboard = () => {
         }),
     })
     const onLogOut = () => {
-        logout();
+        logout().then(() => {
+            toast.success("Logged out", {
+                position: toast.POSITION.TOP_RIGHT,
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+              });
+            });
         navigate("/");
     }
-    const handleDelete = (id) => {
-        // const data = [...formData];
-        // data.splice(id, 1);
-        // setFormData(data)
-        deleteData(id);
-    }
-    //const [Users, fetchUsers] = useState([])
-    const deleteData = (id) => {
-        api.delete('/module/'.concat(`/${id}`))
-            .then((res) => {
-                toast.error(res.data.message, {
-                    position: "top-center",
-                    autoClose: 2000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                });
-                getData()
-            })
-
-        // })
-    }
     const getData = async () => {
-        await api.get("/module")
-            .then((res) => {
-                var data = res.data;
-                return data.data
-            })
-            .then((data) => {
-                //console.log(data)
-                setFormData(data)
-            }).catch((e) => {
-                console.log("Error in getData fun")
-            })
+        // await api.get("/module")
+        //     .then((res) => {
+        //         var data = res.data;
+        //         return data.data
+        //     })
+        //     .then((data) => {
+        //         //console.log(data)
+        //         setFormData(data)
+        //     }).catch((e) => {
+        //         console.log("Error in getData fun")
+        //     })
+        dispatch(getUserDataApi())
     }
 
 
     const saveData = async (newValues) => {
-        await api.post("/module", newValues)
-            .then(res => {
-                toast.success(res.data.message, {
-                    position: "top-center",
-                    autoClose: 2000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                });
-                getData()
-            })
-            .catch(err => {
-                console.log('Error message: ', err.message);
-            });
+        // await api.post("/module", newValues)
+        //     .then(res => {
+        //         toast.success(res.data.message, {
+        //             position: "top-center",
+        //             autoClose: 2000,
+        //             hideProgressBar: false,
+        //             closeOnClick: true,
+        //             pauseOnHover: true,
+        //             draggable: true,
+        //             progress: undefined,
+        //             theme: "light",
+        //         });
+        //         getData()
+        //     })
+        //     .catch(err => {
+        //         console.log('Error message: ', err.message);
+        //     });
+        dispatch(addUserDataApi(newValues));
+        setTimeout(() => {
+            window.location.reload();
+        });
+
     }
     const updateUserData = async (data) => {
-        console.log(data.id)
-        await api.put("/module/".concat(`${data.id}`), data)
-            .then(res => {
-                toast.success(res.data.message, {
-                    position: "top-center",
-                    autoClose: 2000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "light",
-                });
-                getData()
-            })
-            .then(() => {
-                setTimeout(() => { window.location.reload() }, 2000)
-            })
-            .catch(err => {
-                console.log('Error message: ', err.message);
-            });
+        // console.log(data.id)
+        // await api.put("/module/".concat(`${data.id}`), data)
+        //     .then(res => {
+        //         toast.success(res.data.message, {
+        //             position: "top-center",
+        //             autoClose: 2000,
+        //             hideProgressBar: false,
+        //             closeOnClick: true,
+        //             pauseOnHover: true,
+        //             draggable: true,
+        //             progress: undefined,
+        //             theme: "light",
+        //         });
+        //         getData()
+        //     })
+        //     .then(() => {
+        //         setTimeout(() => { window.location.reload() }, 2000)
+        //     })
+        //     .catch(err => {
+        //         console.log('Error message: ', err.message);
+        //     });
+        const updateData = {
+            id: editingId,
+            data: data,
+          };
+          dispatch(updateUserDataApi(updateData));
+          setTimeout(() => {
+            window.location.reload();
+          });
     }
-    const newValues = {};
-
     const updateData = (user) => {
         console.log(user)
         setTimeout(() => {
             setInitialValue1(() => {
-                initialValues1.id = user.id
+                //initialValues1.id = user.id
                 initialValues1.age = user.age
                 initialValues1.country = user.country
                 initialValues1.email = user.email
@@ -161,9 +169,43 @@ const Dashboard = () => {
                 initialValues1.maleBio = user.maleBio
                 initialValues1.femaleName = user.femaleName
             })
+            setEditingId(user.id)
         }, 1000)
+
         //saveData(initialValues1)
     }
+    const handleDelete = (id) => {
+        // const data = [...formData];
+        // data.splice(id, 1);
+        // setFormData(data)
+        deleteData(id);
+    }
+    //const [Users, fetchUsers] = useState([])
+    const deleteData = (id) => {
+        // api.delete('/module/'.concat(`/${id}`))
+        //     .then((res) => {
+        //         toast.error(res.data.message, {
+        //             position: "top-center",
+        //             autoClose: 2000,
+        //             hideProgressBar: false,
+        //             closeOnClick: true,
+        //             pauseOnHover: true,
+        //             draggable: true,
+        //             progress: undefined,
+        //             theme: "light",
+        //         });
+        //         getData()
+        //     })
+    
+        dispatch(deleteUserDataApi(id));
+    setTimeout(() => {
+      window.location.reload();
+    });
+    }
+    
+    const newValues = {};
+
+    
     return (
         <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
             <div className="w-full p-6 m-auto bg-white rounded-md shadow-xl shadow-rose-600/40 ring-2 ring-indigo-600 lg:max-w-xl">
@@ -397,8 +439,9 @@ const Dashboard = () => {
                                         <td><button className="inline-block px-4 py-2 bg-black-600 text-black font-medium text-sm leading-snug uppercase rounded shadow-md hover:bg-black-700 hover:shadow-lg focus:bg-black-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-black-800 active:shadow-lg transition duration-150 ease-in-out" onClick={() => {
                                             console.log("update called")
                                             setFlag(true)
-                                            updateData(data)
+                                            updateData(data,index)
                                         }}>Update</button></td>
+                
                                     </tr>
                                 ))}
                             </tbody>
